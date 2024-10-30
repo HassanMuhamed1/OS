@@ -57,7 +57,23 @@ public class App extends CLI {
                             System.out.println("Usage: mkdir <directory>");
                         }
                     }
+                    case "touch"->{
                     
+                        if (commandParts.length > 1) {
+                            createFile(commandParts[1]);
+                        } else {
+                            System.out.println("Usage: touch <filename>");
+                        }
+                        }
+                    case "rm"->{
+                        if (commandParts.length > 1) {
+                            removeFile(commandParts[1]);
+                        }
+                        else{
+                            System.out.println("Usage: rm <file_or_directory>");
+                            return;
+                        }
+                    }
 
                     default -> System.out.println("Invalid command. Type 'help' for a list of commands.");
                 }
