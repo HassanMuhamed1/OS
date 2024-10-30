@@ -227,6 +227,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.io.FileWriter;
+
 public class CLI {
     protected static File currentDirectory = new File(System.getProperty("user.dir"));
     private static File getRoot(){
@@ -242,6 +244,8 @@ public class CLI {
         System.out.println("ls           - List files in the current directory");
         System.out.println("cd <dir>     - Change directory");
         System.out.println("mkdir <dir>  - Create a new directory");
+        System.out.println("touch <file> - Create a new file");
+        System.out.println("rm <file>    - Remove a file.");
         System.out.println("exit         - Exit the CLI");
         System.out.println("help         - Show available commands");
     }
@@ -254,6 +258,21 @@ public class CLI {
             }
         } else {
             System.out.println("No files found.");
+        }
+    }
+    protected static void listFilesToFile(String filename, boolean append) {
+        try (FileWriter writer = new FileWriter(new File(currentDirectory, filename), append)) {
+            File[] files = currentDirectory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    writer.write(file.getName() + System.lineSeparator());
+                }
+                System.out.println("Output written to " + filename);
+            } else {
+                System.out.println("No files found.");
+            }
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
         }
     }
 
@@ -345,6 +364,14 @@ public class CLI {
 
     protected static String pwd(){
         return currentDirectory.getAbsolutePath();
+    }
+    protected static void pwdToFile(String filename, boolean append) {
+        try (FileWriter writer = new FileWriter(new File(currentDirectory, filename), append)) {
+            writer.write(pwd() + System.lineSeparator());
+            System.out.println("Output written to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+        }
     }
 
 
@@ -492,5 +519,35 @@ public class CLI {
             }
         }
     }
+    protected static void handleComplexCommand(String input) throws IOException {
+        if (input.contains("|")) {
+            // Handle piping
+            String[] pipeCommands = input.split("\\|");
+            for (int i = 0; i < pipeCommands.length; i++) {
+                pipeCommands[i] = pipeCommands[i].trim();
+            }
+            pipe(pipeCommands); // Handle piping commands
+        } else if (input.contains(">") || input.contains(">>")) {
+            // Handle output redirection
+            String[] parts = input.split(" ");
+            String command = parts[0];
+            String filename = parts[parts.length - 1];
+
+            if (parts[parts.length - 2].equals(">")) {
+                if (command.equals("ls")) {
+                    listFilesToFile(filename, false);
+                } else if (command.equals("pwd")) {
+                    pwdToFile(filename, false);
+                }
+            } else if (parts[parts.length - 2].equals(">>")) {
+                if (command.equals("ls")) {
+                    listFilesToFile(filename, true);
+                } else if (command.equals("pwd")) {
+                    pwdToFile(filename, true);
+                }
+            }
+        }
+    }
+
 }
 
