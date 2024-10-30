@@ -11,16 +11,15 @@ public class Testing {
     @Test
     void testPwd() {
         // Check if the current working directory is correct
-        String expectedPath = INITIAL_DIR;
+        String expectedPath = System.getProperty("user.dir");
         assertEquals(expectedPath, cli.pwd(), "PWD command failed.");
     }
 
     @Test
-    void testChangeDirectory() {
+    void testcd() {
         // Create a temporary directory for testing
-        String tempDirName = "testDir";
+        String tempDirName = "src";
         File tempDir = new File(CLI.currentDirectory, tempDirName);
-        tempDir.mkdir();
 
         // Change to the new directory
         cli.changeDirectory(new String[]{"cd", tempDirName});
@@ -68,24 +67,12 @@ public class Testing {
         movedFile.delete();
         destDir.delete();
     }
-    // @Test
-    // public void testpwd(){
-    //     CLI cli = new CLI();
-    //     String expectString = System.getProperty("user.dir");
-    //     String actual = cli.pwd();
-    //     Assert.assertEquals(expectString, actual);
-    // }
-
-
-    // @Test
-    // public void testcd() {
-    //     CLI cli = new CLI();
-    
-    //     String targetDirectory = "bin";
-    //     File expectedDir = new File(System.getProperty("user.dir"), targetDirectory);
-
-    //     cli.changeDirectory(new String[]{"cd", targetDirectory});
-
-    //     assertEquals(expectedDir.getAbsolutePath(), cli.pwd());
-    // }
+   
+    @Test
+    void testPipe(){
+        File currFile = new File(INITIAL_DIR);
+        File [] files = currFile.listFiles();
+        String [] command = new String[]{"ls","sort"};
+        cli.pipe(command);
+    }
 }

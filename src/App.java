@@ -26,7 +26,20 @@ public class App extends CLI {
 
                     case "pwd" -> pwd();
 
-                    case "ls" -> listFiles();
+                    case "ls" -> {
+                        if (input.contains("|")) {
+                            // Handle pipe command (e.g., ls | sort)
+                            String[] pipeCommands = input.split("\\|");
+                            for (int i = 0; i < pipeCommands.length; i++) {
+                                pipeCommands[i] = pipeCommands[i].trim();  // Trim each command
+                            }
+                            pipe(pipeCommands);  // Call the pipe function with the commands
+                        } else {
+                            // Handle normal 'ls' command
+                            listFiles();
+                        }
+                    }
+                    
 
                     case "cd" -> {
                         if (commandParts.length >= 1) {
@@ -43,6 +56,7 @@ public class App extends CLI {
                             System.out.println("Usage: mkdir <directory>");
                         }
                     }
+                    
 
                     default -> System.out.println("Invalid command. Type 'help' for a list of commands.");
                 }

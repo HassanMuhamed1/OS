@@ -188,12 +188,33 @@ public class CLI {
         }
     }
     
-    public static File makeAbsolute(String sourcePath){
+    public static File makeAbsolute(String sourcePath)throws IOException, NoSuchFileException{
         File f = new File(sourcePath);
         if(!f.isAbsolute()) {
             f = new File(currentDirectory.getAbsolutePath(), sourcePath);
         }
         return f.getAbsoluteFile();
     }
+
+    protected static void pipe(String[] commands) {
+        if (commands.length < 2) {
+            throw new IllegalArgumentException("Usage: command_1 | command_2 | command_3 | .... | command_N ");
+        }
+        
+        if (commands[0].equals("ls") && commands[1].equals("sort")) {
+            File[] files = currentDirectory.listFiles();
+            if (files != null) {
+                Arrays.stream(files)
+                      .map(File::getName)
+                      .sorted()
+                      .forEach(System.out::println);
+            } else {
+                System.out.println("No files found!");
+            }
+        } else {
+            System.out.println("Unsupported command: " + String.join(" ", commands));
+        }
+    }
+    
 
 }
