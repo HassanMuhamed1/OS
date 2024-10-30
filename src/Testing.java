@@ -80,6 +80,29 @@ public void testMkdir() {
     // Cleanup (delete the directory after test)
     newDir.delete();
 }
+    @Test
+    void testTouch() throws IOException{
+        CLI cli = new CLI();
+        String fileName="testFile.txt";
+        File testFile= new File(CLI.currentDirectory,fileName);
+        cli.createFile(fileName);
+        assertTrue(testFile.exists(), "File was not created by the touch command.");//verifying
+        testFile.delete();
+    }
+@Test
+    void testRemovefile() throws IOException{
+        CLI cli = new CLI();
+        String fileName="testFile.txt";
+        File testFile= new File(System.getProperty("user.dir"),fileName);
+        Files.createFile(testFile.toPath());
+        assertTrue(testFile.exists(), "File was not created.");
+
+        // Now remove the file using the method under test
+        cli.removeFile(fileName);
+        
+        // Verify that the file has been deleted
+        assertFalse(testFile.exists(), "File was not deleted.");
+    }
 
 @Test
 public void testRmdir() {
