@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 public class CLI {
     protected static File currentDirectory = new File(System.getProperty("user.dir"));
@@ -64,49 +66,6 @@ public class CLI {
         }
     
         // cd [directory_path] or cd dir_1/dir_2/dir_3
-        // if (command.length == 2) {
-        //     File newDir = new File(command[1].startsWith(File.separator) ? 
-        //                            command[1] : 
-        //                            new File(currentDirectory, command[1]).getPath());
-        //     if (newDir.exists() && newDir.isDirectory()&& newDir.isFile()) {
-        //         currentDirectory = newDir;
-        //     } else {
-        //         System.out.println("Invalid directory: " + command[1]);
-        //     }
-        // }
-    //     if (command.length == 2) {
-    //         // Create a new File object with either an absolute or relative path
-    //         File newDir = new File(command[1].startsWith(File.separator) ? 
-    //                                command[1] : 
-    //                                new File(currentDirectory, command[1]).getPath());
-        
-    //         // Check if the new path exists
-    //         // if (newDir.exists()) {
-    //         //     // Check if it is a directory
-    //         //     if (newDir.isDirectory()) {
-    //         //         currentDirectory = newDir.getAbsoluteFile();  // Change the working directory
-    //         //     } else {
-    //         //         System.out.println("Error: The path is a file, not a directory.");
-    //         //     }
-    //         // } else {
-    //         //     System.out.println("Invalid directory: " + command[1]);
-    //         // }
-    //         File[] directories = currentDirectory.listFiles(File::isDirectory);
-    // if (directories != null) {
-    //     String targetDir = command[1].trim();
-    //     boolean found = Arrays.stream(directories)
-    //             .anyMatch(dir -> dir.getName().equals(targetDir));
-
-    //     if (found) {
-    //         // If directory exists and matches case-sensitively, change directory
-    //         currentDirectory = new File(currentDirectory, targetDir).getAbsoluteFile();
-    //     } else {
-    //         System.out.println("Invalid directory: " + targetDir);
-    //     }
-    // } else {
-    //     System.out.println("Error: Unable to list directories.");
-    // }
-    //     }
     if (command.length == 2) {
         String targetPath = command[1].trim();
         File newDir;
@@ -175,28 +134,60 @@ public class CLI {
         return currentDirectory.getAbsolutePath();
     }
 
-    protected static void mv(String []command)throws IOException,NoSuchFileException{
-        File src = makeAbsolute(command[1]);
-        File dst = makeAbsolute(command[2]);
-        if(!src.exists()) {
-            throw new NoSuchFileException(src.getAbsolutePath(), null, "does not exist.");
-        }
-        if(dst.isFile()){
-            throw new IOException("Can't move into file.");
-        }
 
-        if(!dst.exists()){ //renaming
-            Files.move(src.toPath(),src.toPath().resolveSibling(dst.getName()));
+    protected static void mv(String[] command) throws IOException, NoSuchFileException {
+        // Check if there are at least two arguments (one or more source + one destination)
+        if (command.length < 3) {
+            throw new IllegalArgumentException("Usage: mv <source1> <source2> ... <destination>");
         }
-        else{
-            for(int idx = 0; idx < command.length-1; idx++) {
-                Files.move(src.toPath(),dst.toPath().resolve(src.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
-                }
-                // move src to dst
-                Files.move(src.toPath(),dst.toPath().resolve(src.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
-                //If StandardCopyOption.REPLACE_EXISTING this option is not used and the file already exists, an exception will be thrown (e.g., FileAlreadyExistsException)
-            } 
+    
+        // The last argument is the destination (either a new file name or a directory)
+        File dst = makeAbsolute(command[command.length - 1]);
+    
+        // Handle renaming if there's only one source file
+        if (command.length == 3) {
+            File src = makeAbsolute(command[1]);
+    
+            if (!src.exists()) {
+                throw new NoSuchFileException(src.getAbsolutePath(), null, "does not exist.");
+            }
+    
+            // If destination is a directory, move the source file into it
+            if (dst.isDirectory()) {
+                Files.move(
+                    src.toPath(),
+                    dst.toPath().resolve(src.getName()),  // Move into the directory
+                    StandardCopyOption.REPLACE_EXISTING
+                );
+            } else {
+                // Rename the source file to the destination file name
+                Files.move(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            return;
+        }
+    
+        // If there are multiple source files, ensure the destination is a directory
+        if (!dst.exists() || !dst.isDirectory()) {
+            throw new IOException("Destination must be an existing directory: " + dst.getAbsolutePath());
+        }
+    
+        // Loop through all source files and move them to the destination directory
+        for (int i = 1; i < command.length - 1; i++) {
+            File src = makeAbsolute(command[i]);
+    
+            if (!src.exists()) {
+                throw new NoSuchFileException(src.getAbsolutePath(), null, "does not exist.");
+            }
+    
+            // Move the source file into the destination directory
+            Files.move(
+                src.toPath(),
+                dst.toPath().resolve(src.getName()),  // Place inside the destination
+                StandardCopyOption.REPLACE_EXISTING
+            );
+        }
     }
+    
     public static File makeAbsolute(String sourcePath){
         File f = new File(sourcePath);
         if(!f.isAbsolute()) {
