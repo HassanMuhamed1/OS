@@ -118,17 +118,7 @@ public class CLI {
         return dir;
     }
 
-    
-    protected static void makeDirectory(String dirName) {
-        File newDir = new File(currentDirectory, dirName);
-        if (newDir.exists()) {
-            System.out.println("Directory already exists: " + dirName);
-        } else if (newDir.mkdir()) {
-            System.out.println("Directory created: " + dirName);
-        } else {
-            System.out.println("Failed to create directory: " + dirName);
-        }
-    }
+
 
     protected static String pwd(){
         return currentDirectory.getAbsolutePath();
@@ -216,5 +206,29 @@ public class CLI {
         }
     }
     
+    protected static void makeDirectory(String dirName) {
+        File newDir = new File(currentDirectory, dirName);
 
+        if (newDir.exists()) {
+            System.out.println("Directory already exists: " + dirName);
+        } else if (newDir.mkdir()) {
+        }
+        else if (newDir.mkdir()) {
+            System.out.println("Directory created: " + dirName);
+        }
+        else {
+            System.out.println("Failed to create directory: " + dirName);
+        }
+    }
+
+    protected static void removeDirectory(String dirName) {
+        File newDir = new File(currentDirectory, dirName);
+        if (!newDir.exists()) {
+            System.out.println("Directory Does not exists: " + dirName);
+        } else if (newDir.delete()) {
+            System.out.println("Directory Removed.");
+        } else {
+            System.out.println("Failed to remove " + dirName+ ":Directory not empty ");
+        }
+    }
 }

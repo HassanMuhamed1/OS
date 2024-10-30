@@ -67,7 +67,65 @@ public class Testing {
         movedFile.delete();
         destDir.delete();
     }
-   
+    @Test
+public void testMkdir() {
+    CLI cli = new CLI();
+    String newDirName = "newDir";
+    File newDir = new File(System.getProperty("user.dir"), newDirName);
+
+    // Create the directory
+    cli.makeDirectory(newDirName);
+    assertTrue(newDir.exists() && newDir.isDirectory(), "Directory should be created");
+
+    // Cleanup (delete the directory after test)
+    newDir.delete();
+}
+
+@Test
+public void testRmdir() {
+    CLI cli = new CLI();
+    String dirToDelete = "dirToRemove";
+    File dir = new File(System.getProperty("user.dir"), dirToDelete);
+
+    // Ensure the directory is created first
+    cli.makeDirectory(dirToDelete);
+    assertTrue(dir.exists(), "Directory should exist before deletion");
+
+    // Now remove it using rmdir
+    cli.removeDirectory(dirToDelete);
+    assertFalse(dir.exists(), "Directory should be removed");
+}
+
+    // @Test
+    // public void testMkdir() {
+    //     CLI cli = new CLI();
+    //     String newDirName = "newDir";
+    //     File newDir = new File(System.getProperty("user.dir"), newDirName);
+
+    //     // Create the directory
+    //     cli.makeDirectory(newDirName);
+    //     assertTrue("Directory should be created", newDir.exists() && newDir.isDirectory());
+
+    //     // Cleanup (delete the directory after test)
+    //     newDir.delete();
+    // }
+
+    // @Test
+    // public void testRmdir() {
+    //     CLI cli = new CLI();
+    //     String dirToDelete = "dirToRemove";
+    //     File dir = new File(System.getProperty("user.dir"), dirToDelete);
+
+    //     // Ensure the directory is created first
+    //     cli.makeDirectory(dirToDelete);
+    //     assertTrue("Directory should exist before deletion", dir.exists());
+
+    //     // Now remove it using rmdir
+    //     cli.removeDirectory(dirToDelete);
+    //     assertFalse("Directory should be removed", dir.exists());
+    // }
+
+    
     @Test
     void testPipe(){
         File currFile = new File(INITIAL_DIR);

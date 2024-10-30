@@ -48,7 +48,8 @@ public class App extends CLI {
                             System.out.println("Usage: cd <directory>");
                         }
                     }
-
+                    case "rmdir" -> removeDirectory(commandParts[1]);
+                    
                     case "mkdir" -> {
                         if (commandParts.length > 1) {
                             makeDirectory(commandParts[1]);
