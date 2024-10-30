@@ -1,10 +1,6 @@
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.*;
-import java.io.*;
-import java.io.FileReader;
 import java.util.*;
 public class CLI {
     protected static File currentDirectory = new File(System.getProperty("user.dir"));
@@ -175,8 +171,8 @@ public class CLI {
         }
     }
 
-    protected static void pwd(){
-        System.out.println(currentDirectory);
+    protected static String pwd(){
+        return currentDirectory.getAbsolutePath();
     }
 
     protected static void mv(String []command)throws IOException,NoSuchFileException{
@@ -192,8 +188,14 @@ public class CLI {
         if(!dst.exists()){ //renaming
             Files.move(src.toPath(),src.toPath().resolveSibling(dst.getName()));
         }
-        else
-            Files.move(src.toPath(),dst.toPath().resolve(src.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+        else{
+            for(int idx = 0; idx < command.length-1; idx++) {
+                Files.move(src.toPath(),dst.toPath().resolve(src.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+                }
+                // move src to dst
+                Files.move(src.toPath(),dst.toPath().resolve(src.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+                //If StandardCopyOption.REPLACE_EXISTING this option is not used and the file already exists, an exception will be thrown (e.g., FileAlreadyExistsException)
+            } 
     }
     public static File makeAbsolute(String sourcePath){
         File f = new File(sourcePath);
