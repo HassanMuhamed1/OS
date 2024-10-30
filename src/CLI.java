@@ -454,5 +454,43 @@ public class CLI {
             System.out.println("Failed to remove " + dirName+ ":Directory not empty ");
         }
     }
+        protected static void createFile(String fileName) {
+        File file = new File(fileName);
+        if (file.exists()) {
+            System.out.println("file already exists: " + fileName);
+        }
+        else{
+            try{
+         if (file.createNewFile()) {
+            System.out.println("File created: " + fileName);
+        } else {
+            System.out.println("Failed to create directory: " + fileName);
+        }
+    }
+    catch(IOException e){
+            System.out.println("An error occurred while creating the file.");
+            e.printStackTrace();
+        }
+
+     }
+    }
+    protected static void removeFile(String fileName) {
+        File file = new File(currentDirectory, fileName);
+        
+        if (!file.exists()) {
+            System.out.println("File does not exist: " + fileName);
+        } else {
+            try {
+                if (Files.deleteIfExists(file.toPath())) {
+                    System.out.println("File deleted successfully: " + fileName);
+                } else {
+                    System.out.println("Failed to delete file: " + fileName);
+                }
+            } catch (IOException e) {
+                System.out.println("An error occurred while trying to delete the file: " + fileName);
+                e.printStackTrace();
+            }
+        }
+    }
 }
 
