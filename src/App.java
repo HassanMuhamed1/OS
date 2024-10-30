@@ -20,12 +20,14 @@ public class App extends CLI {
 
                     case "help" -> printHelp();
 
+                    case "mv" -> mv();
+
                     case "pwd" -> pwd();
 
                     case "ls" -> listFiles();
 
                     case "cd" -> {
-                        if (commandParts.length > 1) {
+                        if (commandParts.length >= 1) {
                             changeDirectory(commandParts);
                         } else {
                             System.out.println("Usage: cd <directory>");
