@@ -1,8 +1,10 @@
 
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.Scanner;
 public class App extends CLI {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchFileException, IOException {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("Welcome to the Java CLI. Type 'help' for available commands.");
 
@@ -20,7 +22,7 @@ public class App extends CLI {
 
                     case "help" -> printHelp();
 
-                    case "mv" -> mv();
+                    case "mv" -> mv(commandParts);
 
                     case "pwd" -> pwd();
 

@@ -1,6 +1,11 @@
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.*;
+import java.io.*;
+import java.io.FileReader;
+import java.util.*;
 public class CLI {
     protected static File currentDirectory = new File(System.getProperty("user.dir"));
     private static File getRoot(){
@@ -108,23 +113,23 @@ public class CLI {
     //     }
     if (command.length == 2) {
         String targetPath = command[1].trim();
-    File newDir;
+        File newDir;
 
-    // Handle absolute vs. relative paths
-    if (isAbsolutePath(targetPath)) {
-        newDir = new File(targetPath);  // Absolute path
-    } else {
-        newDir = resolveRelativePath(targetPath);  // Relative path
-    }
+        // Handle absolute vs. relative paths
+        if (isAbsolutePath(targetPath)) {
+            newDir = new File(targetPath);  // Absolute path
+        } else {
+            newDir = resolveRelativePath(targetPath);  // Relative path
+        }
 
-    // Validate the final resolved directory
-    if (newDir != null && newDir.exists() && newDir.isDirectory()) {
-        currentDirectory = newDir.getAbsoluteFile();
-    } else {
-        System.out.println("Invalid directory: " + targetPath);
+        // Validate the final resolved directory
+        if (newDir != null && newDir.exists() && newDir.isDirectory()) {
+            currentDirectory = newDir.getAbsoluteFile();
+        } else {
+            System.out.println("Invalid directory: " + targetPath);
+        }
     }
 }
-    }
     private static boolean isAbsolutePath(String path) {
         return path.startsWith(File.separator) || path.matches("^[A-Z]:.*");
     }
@@ -174,8 +179,28 @@ public class CLI {
         System.out.println(currentDirectory);
     }
 
-    protected static void mv(){
-        
+    protected static void mv(String []command)throws IOException,NoSuchFileException{
+        File src = makeAbsolute(command[1]);
+        File dst = makeAbsolute(command[2]);
+        if(!src.exists()) {
+            throw new NoSuchFileException(src.getAbsolutePath(), null, "does not exist.");
+        }
+        if(dst.isFile()){
+            throw new IOException("Can't move into file.");
+        }
+
+        if(!dst.exists()){ //renaming
+            Files.move(src.toPath(),src.toPath().resolveSibling(dst.getName()));
+        }
+        else
+            Files.move(src.toPath(),dst.toPath().resolve(src.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+    }
+    public static File makeAbsolute(String sourcePath){
+        File f = new File(sourcePath);
+        if(!f.isAbsolute()) {
+            f = new File(currentDirectory.getAbsolutePath(), sourcePath);
+        }
+        return f.getAbsoluteFile();
     }
 
 }
