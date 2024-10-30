@@ -11,9 +11,13 @@ public class App extends CLI {
             while (true) {
                 System.out.print(currentDirectory.getAbsolutePath() + " $ ");
                 String input = scanner.nextLine().trim();
+                
                 String[] commandParts = input.split(" ");
                 String command = commandParts[0];
-
+                if (input.contains(">") || input.contains(">>") || input.contains("|")) {
+                    handleComplexCommand(input);
+                    continue;
+                }
                 switch (command) {
                     case "exit" -> {
                         System.out.println("Exiting CLI...");
@@ -27,17 +31,7 @@ public class App extends CLI {
                     case "pwd" -> pwd();
 
                     case "ls" -> {
-                        if (input.contains("|")) {
-                            // Handle pipe command (e.g., ls | sort)
-                            String[] pipeCommands = input.split("\\|");
-                            for (int i = 0; i < pipeCommands.length; i++) {
-                                pipeCommands[i] = pipeCommands[i].trim();  // Trim each command
-                            }
-                            pipe(pipeCommands);  // Call the pipe function with the commands
-                        } else {
-                            // Handle normal 'ls' command
-                            listFiles();
-                        }
+                        listFiles();
                     }
                     
 
