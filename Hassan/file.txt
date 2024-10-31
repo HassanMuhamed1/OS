@@ -1,6 +1,3 @@
 C:\Users\hassa\Desktop\Ass_OS\CLI\Hassan
-a
-em
-file.pdf
+file.txt
 hassan.txt
-moro.txt

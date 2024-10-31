@@ -3,11 +3,16 @@ import org.junit.jupiter.api.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
 
 public class Testing {
     private static final String INITIAL_DIR = System.getProperty("user.dir");
     private CLI cli;
-
+    
     @Test
     void testPwd() {
         // Check if the current working directory is correct
@@ -68,18 +73,18 @@ public class Testing {
         destDir.delete();
     }
     @Test
-public void testMkdir() {
-    CLI cli = new CLI();
-    String newDirName = "newDir";
-    File newDir = new File(System.getProperty("user.dir"), newDirName);
+    public void testMkdir() {
+        CLI cli = new CLI();
+        String newDirName = "newDir";
+        File newDir = new File(System.getProperty("user.dir"), newDirName);
 
-    // Create the directory
-    cli.makeDirectory(newDirName);
-    assertTrue(newDir.exists() && newDir.isDirectory(), "Directory should be created");
+        // Create the directory
+        cli.makeDirectory(newDirName);
+        assertTrue(newDir.exists() && newDir.isDirectory(), "Directory should be created");
 
-    // Cleanup (delete the directory after test)
-    newDir.delete();
-}
+        // Cleanup (delete the directory after test)
+        newDir.delete();
+    }
     @Test
     void testTouch() throws IOException{
         CLI cli = new CLI();
@@ -89,7 +94,7 @@ public void testMkdir() {
         assertTrue(testFile.exists(), "File was not created by the touch command.");//verifying
         testFile.delete();
     }
-@Test
+    @Test
     void testRemovefile() throws IOException{
         CLI cli = new CLI();
         String fileName="testFile.txt";
@@ -99,56 +104,25 @@ public void testMkdir() {
 
         // Now remove the file using the method under test
         cli.removeFile(fileName);
-        
+
         // Verify that the file has been deleted
         assertFalse(testFile.exists(), "File was not deleted.");
     }
 
-@Test
-public void testRmdir() {
-    CLI cli = new CLI();
-    String dirToDelete = "dirToRemove";
-    File dir = new File(System.getProperty("user.dir"), dirToDelete);
+    @Test
+    public void testRmdir() {
+        CLI cli = new CLI();
+        String dirToDelete = "dirToRemove";
+        File dir = new File(System.getProperty("user.dir"), dirToDelete);
 
-    // Ensure the directory is created first
-    cli.makeDirectory(dirToDelete);
-    assertTrue(dir.exists(), "Directory should exist before deletion");
+        // Ensure the directory is created first
+        cli.makeDirectory(dirToDelete);
+        assertTrue(dir.exists(), "Directory should exist before deletion");
 
-    // Now remove it using rmdir
-    cli.removeDirectory(dirToDelete);
-    assertFalse(dir.exists(), "Directory should be removed");
-}
-
-    // @Test
-    // public void testMkdir() {
-    //     CLI cli = new CLI();
-    //     String newDirName = "newDir";
-    //     File newDir = new File(System.getProperty("user.dir"), newDirName);
-
-    //     // Create the directory
-    //     cli.makeDirectory(newDirName);
-    //     assertTrue("Directory should be created", newDir.exists() && newDir.isDirectory());
-
-    //     // Cleanup (delete the directory after test)
-    //     newDir.delete();
-    // }
-
-    // @Test
-    // public void testRmdir() {
-    //     CLI cli = new CLI();
-    //     String dirToDelete = "dirToRemove";
-    //     File dir = new File(System.getProperty("user.dir"), dirToDelete);
-
-    //     // Ensure the directory is created first
-    //     cli.makeDirectory(dirToDelete);
-    //     assertTrue("Directory should exist before deletion", dir.exists());
-
-    //     // Now remove it using rmdir
-    //     cli.removeDirectory(dirToDelete);
-    //     assertFalse("Directory should be removed", dir.exists());
-    // }
-
-    
+        // Now remove it using rmdir
+        cli.removeDirectory(dirToDelete);
+        assertFalse(dir.exists(), "Directory should be removed");
+    }
     @Test
     void testPipe(){
         File currFile = new File(INITIAL_DIR);
@@ -156,65 +130,91 @@ public void testRmdir() {
         String [] command = new String[]{"ls","sort"};
         cli.pipe(command);
     }
+
+    @Test
+    void testListFiles() throws IOException {
+        File hiddenFile = new File(CLI.currentDirectory, ".hiddenFile.txt");
+        File visibleFile = new File(CLI.currentDirectory, "fileVisible.txt");
+        hiddenFile.createNewFile();
+        visibleFile.createNewFile();
+        System.out.println("Testing listFiles:");
+        CLI.listFiles();
+        hiddenFile.delete();
+        visibleFile.delete();
+    }
+
+    @Test
+    void testListFilesAll() throws IOException {
+        File hiddenFile = new File(CLI.currentDirectory, ".hiddenFile.txt");
+        File visibleFile = new File(CLI.currentDirectory, "fileVisible.txt");
+        hiddenFile.createNewFile();
+        visibleFile.createNewFile();
+        System.out.println("Testing listFilesAll:");
+        CLI.listFilesAll();
+        hiddenFile.delete();
+        visibleFile.delete();
+    }
+
+    @Test
+    void testListFilesReverse() throws IOException {
+        File fileA = new File(CLI.currentDirectory, "aFile.txt");
+        File fileB = new File(CLI.currentDirectory, "bFile.txt");
+        fileA.createNewFile();
+        fileB.createNewFile();
+        System.out.println("Testing listFilesReverse:");
+        CLI.listFilesReverse();
+        fileA.delete();
+        fileB.delete();
+    }
+
+    @Test
+    void testRedirectOutputToFile() throws IOException {
+        String filename = "output.txt";
+        String command = "ls > " + filename;
+
+        try {
+            // Run the command
+            cli.handleComplexCommand(command);
+
+            // Verify that the file was created and contains the expected content
+            File outputFile = new File(CLI.currentDirectory, filename);
+            assertTrue(outputFile.exists(), "Output file should be created.");
+
+            // Read content from the file and verify it matches expected directory listing
+            String[] expectedFiles = CLI.currentDirectory.list();
+            String actualContent = new String(Files.readAllBytes(outputFile.toPath()));
+            for (String expectedFile : expectedFiles) {
+                assertTrue(actualContent.contains(expectedFile), "File listing does not match expected content.");
+            }
+        } finally {
+            // Cleanup
+            new File(CLI.currentDirectory, filename).delete();
+        }
+    }
+
+    @Test
+    void testAppendOutputToFile() throws IOException {
+        String filename = "output_append.txt";
+        String command = "pwd >> " + filename;
+    
+        // Create the file initially with some content
+        Files.write(Paths.get(CLI.currentDirectory.getAbsolutePath(), filename), "Initial Content\n".getBytes());
+    
+        try {
+            // Run the command
+            cli.handleComplexCommand(command);
+    
+            // Verify that the file was created and contains the expected content
+            File outputFile = new File(CLI.currentDirectory, filename);
+            assertTrue(outputFile.exists(), "Output file should be created.");
+    
+            // Read content from the file and verify it matches expected content
+            String actualContent = new String(Files.readAllBytes(outputFile.toPath()));
+            String expectedContent = "Initial Content\n" + cli.pwd() + System.lineSeparator();
+            assertEquals(expectedContent, actualContent, "File content does not match expected append content.");
+        } finally {
+            // Cleanup
+            new File(CLI.currentDirectory, filename).delete();
+        }
+    }
 }
-
-// import static org.junit.Assert.assertEquals;
-// import static org.junit.Assert.assertTrue;
-// import static org.junit.Assert.assertFalse;
-
-// import static org.junit.Assert.assertEquals;
-// import java.io.File;
-// import org.junit.*;
-
-// public class Testing {
-    
-//     @Test
-//     public void testpwd(){
-//         CLI cli = new CLI();
-//         String expectString = System.getProperty("user.dir");
-//         String actual = cli.pwd();
-//         Assert.assertEquals(expectString, actual);
-//     }
-
-
-//     @Test
-//     public void testcd() {
-//         CLI cli = new CLI();
-    
-//         String targetDirectory = "bin";
-//         File expectedDir = new File(System.getProperty("user.dir"), targetDirectory);
-
-//         cli.changeDirectory(new String[]{"cd", targetDirectory});
-
-//         assertEquals(expectedDir.getAbsolutePath(), cli.pwd());
-//     }
-
-//     @Test
-//     public void testMkdir() {
-//         CLI cli = new CLI();
-//         String newDirName = "newDir";
-//         File newDir = new File(System.getProperty("user.dir"), newDirName);
-
-//         // Create the directory
-//         cli.makeDirectory(newDirName);
-//         assertTrue("Directory should be created", newDir.exists() && newDir.isDirectory());
-
-//         // Cleanup (delete the directory after test)
-//         newDir.delete();
-//     }
-
-//     @Test
-//     public void testRmdir() {
-//         CLI cli = new CLI();
-//         String dirToDelete = "dirToRemove";
-//         File dir = new File(System.getProperty("user.dir"), dirToDelete);
-
-//         // Ensure the directory is created first
-//         cli.makeDirectory(dirToDelete);
-//         assertTrue("Directory should exist before deletion", dir.exists());
-
-//         // Now remove it using rmdir
-//         cli.removeDirectory(dirToDelete);
-//         assertFalse("Directory should be removed", dir.exists());
-//     }
-// }
